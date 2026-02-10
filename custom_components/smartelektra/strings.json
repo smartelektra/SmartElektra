@@ -1,0 +1,19 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SmartElektra",
+        "description": "Dodaj bramę Modbus TCP (RS485→ETH). Wybierz typ (mini=UNO 7, mega=MEGA 30) – przełączniki dodadzą się automatycznie.",
+        "data": {
+          "host": "Adres IP bramy (Modbus TCP)",
+          "port": "Port",
+          "slave": "Slave (Modbus RTU ID)",
+          "device": "Typ urządzenia (mini/mega)"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Ta konfiguracja już istnieje."
+    }
+  }
+}
