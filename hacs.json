@@ -1,6 +1,6 @@
 {
   "name": "SmartElektra",
-  "content_in_root": false,
+  "content_in_root": true,
   "render_readme": true,
   "domains": ["smartelektra"],
   "homeassistant": "2023.0.0"
