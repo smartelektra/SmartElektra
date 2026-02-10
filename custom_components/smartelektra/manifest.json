@@ -4,7 +4,7 @@
   "version": "1.5.0",
   "documentation": "https://github.com/smartelektra/SmartElektra",
   "issue_tracker": "https://github.com/smartelektra/SmartElektra/issues",
-  "codeowners": [],
+  "codeowners": [@Piotr Duda],
   "config_flow": true,
   "iot_class": "local_polling",
   "requirements": []
