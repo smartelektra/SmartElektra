@@ -1,8 +1,0 @@
-{
-  "name": "SmartElektra",
-  "domain": "smartelektra",
-  "documentation": "https://github.com/smartelektra/SmartElektra",
-  "codeowners": ["@SmartElektra Piotr Duda"],
-  "requirements": [],
-  "version": "1.0.0"
-}
