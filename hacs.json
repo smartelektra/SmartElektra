@@ -1,0 +1,6 @@
+{
+  "name": "SmartElektra",
+  "render_readme": true,
+  "domains": ["smartelektra"],
+  "homeassistant": "2024.1.0"
+}
