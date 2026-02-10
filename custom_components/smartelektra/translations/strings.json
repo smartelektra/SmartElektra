@@ -1,0 +1,27 @@
+{
+  "title": "SmartElektra",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Dodaj SmartElektra",
+        "description": "Podaj adres bramy Modbus TCP (RS485→ETH) i numer slave.",
+        "data": {
+          "host": "Adres IP / host",
+          "port": "Port",
+          "slave": "Slave",
+          "device": "Typ urządzenia"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opcje SmartElektra",
+        "data": {
+          "device": "Typ urządzenia"
+        }
+      }
+    }
+  }
+}
