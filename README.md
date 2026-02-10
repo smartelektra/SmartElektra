@@ -1,16 +1,23 @@
-## Hi there 👋
+# SmartElektra (Home Assistant custom integration)
 
-<!--
-**smartelektra/SmartElektra** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+Integracja tworzy przełączniki przekaźników po Modbus TCP (brama RS485→ETH) dla Arduino jako Modbus RTU slave.
 
-Here are some ideas to get you started:
+## Kreator (Config Flow)
+Wybierasz:
+- IP bramy (Modbus TCP)
+- port (domyślnie 502)
+- slave (ID Arduino po RS485)
+- typ: **mini** (UNO = 7 przekaźników) lub **mega** (MEGA = 30 przekaźników)
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+Przełączniki dodają się automatycznie (7 albo 30).
+
+## Instalacja przez HACS (Custom repository)
+1. Wgraj to repo na GitHub.
+2. HACS → Integrations → ⋮ → Custom repositories → dodaj URL repo (Type: Integration).
+3. Zainstaluj SmartElektra w HACS i zrestartuj HA.
+
+## Ważne
+Uzupełnij w `manifest.json` swoje:
+- documentation
+- issue_tracker
+- codeowners
