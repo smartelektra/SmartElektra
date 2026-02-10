@@ -1,7 +1,9 @@
 {
   "name": "SmartElektra",
   "content_in_root": false,
-  "domains": ["smartelektra"],
+  "domains": [
+    "smartelektra"
+  ],
   "country": "PL",
   "homeassistant": "2024.6.0"
 }
