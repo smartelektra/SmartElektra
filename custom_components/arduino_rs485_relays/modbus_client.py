@@ -9,8 +9,7 @@ from pymodbus.client import ModbusTcpClient
 class ModbusTcpCoilClient:
     """Conservative Modbus TCP client (sync).
 
-    Gateways that drop async sockets often work better with a single sync socket.
-    All methods here are blocking; call them from HA executor threads.
+    All methods are blocking; call them from HA executor threads.
     """
 
     def __init__(self, host: str, port: int, timeout: float = 5.0) -> None:
@@ -28,7 +27,6 @@ class ModbusTcpCoilClient:
                 pass
 
     def _ensure_connected(self) -> None:
-        # pymodbus returns bool for connect()
         if not self._client.connect():
             raise ConnectionError(f"Cannot connect to {self._host}:{self._port}")
 
@@ -37,7 +35,6 @@ class ModbusTcpCoilClient:
             self._ensure_connected()
             rr = self._client.read_coils(address, count=count, slave=slave_id)
             if rr is None:
-                # Some gateways return None on socket issues
                 self._client.close()
                 raise ConnectionError("No response (None) from read_coils")
             if rr.isError():
