@@ -1,6 +1,0 @@
-{
-  "name": "Arduino RS485 Relays (Modbus TCP)",
-  "content_in_root": false,
-  "domain": "arduino_rs485_relays",
-  "homeassistant": "2024.1.0"
-}
