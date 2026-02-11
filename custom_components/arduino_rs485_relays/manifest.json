@@ -1,0 +1,10 @@
+{
+  "domain": "arduino_rs485_relays",
+  "name": "Arduino RS485 Relays (Modbus TCP)",
+  "version": "1.0.0",
+  "documentation": "https://github.com/yourname/arduino-rs485-relays",
+  "requirements": [],
+  "codeowners": [],
+  "config_flow": true,
+  "iot_class": "local_polling"
+}
