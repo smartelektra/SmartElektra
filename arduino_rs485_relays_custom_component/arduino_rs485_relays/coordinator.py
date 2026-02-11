@@ -1,0 +1,41 @@
+from __future__ import annotations
+
+from datetime import timedelta
+from typing import List
+
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
+from .const import CONF_BASE_ADDRESS, CONF_SCAN_INTERVAL, CONF_SLAVE, RELAYS_COUNT
+from .modbus_client import ModbusTcpCoilClient
+
+
+class RelayDataCoordinator(DataUpdateCoordinator[List[bool]]):
+    def __init__(self, hass: HomeAssistant, client: ModbusTcpCoilClient, entry) -> None:
+        self._client = client
+        self._entry = entry
+        scan = entry.options.get(CONF_SCAN_INTERVAL, entry.data[CONF_SCAN_INTERVAL])
+        super().__init__(
+            hass,
+            logger=None,
+            name="Arduino RS485 Relays",
+            update_interval=timedelta(seconds=scan),
+        )
+
+    @property
+    def slave(self) -> int:
+        return self._entry.options.get(CONF_SLAVE, self._entry.data[CONF_SLAVE])
+
+    @property
+    def base_address(self) -> int:
+        return self._entry.options.get(CONF_BASE_ADDRESS, self._entry.data[CONF_BASE_ADDRESS])
+
+    async def _async_update_data(self) -> List[bool]:
+        try:
+            return await self._client.read_coils(
+                address=self.base_address,
+                count=RELAYS_COUNT,
+                slave_id=self.slave,
+            )
+        except Exception as err:
+            raise UpdateFailed(str(err)) from err
