@@ -1,0 +1,23 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SmartElektra",
+        "description": "Podaj dane bramki Modbus TCP (RS485→ETH) oraz parametry urządzenia.",
+        "data": {
+          "host": "Adres IP / host",
+          "port": "Port",
+          "slave": "Slave (Unit ID)",
+          "base_address": "Adres bazowy (coil start)",
+          "scan_interval": "Odstęp odczytu (sek.)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Nie można połączyć / brak odpowiedzi Modbus."
+    },
+    "abort": {
+      "already_configured": "To urządzenie jest już skonfigurowane."
+    }
+  }
+}
