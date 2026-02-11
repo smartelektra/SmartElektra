@@ -29,6 +29,10 @@ STEP_USER_SCHEMA = vol.Schema(
 )
 
 
+def _opt_key(prefix: str, i: int) -> str:
+    return f"{prefix}_{i+1}"
+
+
 class SmartElektraConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
@@ -67,29 +71,43 @@ class SmartElektraConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class SmartElektraOptionsFlowHandler(config_entries.OptionsFlow):
-    def __init__(self, config_entry):
-        self.config_entry = config_entry
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        self._entry = config_entry
 
     async def async_step_init(self, user_input=None):
-        schema = vol.Schema(
-            {
-                vol.Required(CONF_DEVICE, default=self.config_entry.data.get(CONF_DEVICE, DEVICE_MINI)): vol.In(
-                    [DEVICE_MINI, DEVICE_MEGA]
-                ),
-            }
-        )
+        # Determine current device/coils (options override data)
+        current_device = (self._entry.options.get(CONF_DEVICE) or self._entry.data.get(CONF_DEVICE) or DEVICE_MINI)
+        current_coils = int(self._entry.options.get(CONF_COILS) or self._entry.data.get(CONF_COILS) or COILS_MINI)
 
         if user_input is not None:
             device = user_input[CONF_DEVICE]
             coils = COILS_MINI if device == DEVICE_MINI else COILS_MEGA
 
-            # Options can override device/coils without re-creating the entry
-            return self.async_create_entry(
-                title="",
-                data={
-                    CONF_DEVICE: device,
-                    CONF_COILS: coils,
-                },
+            # Ensure we store the chosen device/coils plus channel options.
+            out = dict(user_input)
+            out[CONF_DEVICE] = device
+            out[CONF_COILS] = coils
+            return self.async_create_entry(title="", data=out)
+
+        opts = self._entry.options or {}
+        schema: dict = {}
+
+        # Device selector (Mini=7, Mega=30)
+        schema[vol.Required(CONF_DEVICE, default=current_device)] = vol.In([DEVICE_MINI, DEVICE_MEGA])
+
+        # Global default pulse for convenience
+        schema[vol.Optional("pulse_default_ms", default=int(opts.get("pulse_default_ms", 300)))] = vol.All(
+            vol.Coerce(int), vol.Range(min=50, max=5000)
+        )
+
+        # Channel options
+        for i in range(current_coils):
+            schema[vol.Optional(_opt_key("invert", i), default=bool(opts.get(_opt_key("invert", i), False)))] = bool
+            schema[vol.Optional(_opt_key("btn_mono", i), default=bool(opts.get(_opt_key("btn_mono", i), False)))] = bool
+            schema[vol.Optional(_opt_key("ha_mono", i), default=bool(opts.get(_opt_key("ha_mono", i), False)))] = bool
+
+            schema[vol.Optional(_opt_key("pulse_ms", i), default=int(opts.get(_opt_key("pulse_ms", i), opts.get("pulse_default_ms", 300))))] = vol.All(
+                vol.Coerce(int), vol.Range(min=50, max=5000)
             )
 
-        return self.async_show_form(step_id="init", data_schema=schema)
+        return self.async_show_form(step_id="init", data_schema=vol.Schema(schema))

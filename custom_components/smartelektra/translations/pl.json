@@ -21,7 +21,8 @@
       "init": {
         "title": "Opcje SmartElektra",
         "data": {
-          "device": "Typ urządzenia (mini=7, mega=30)"
+          "device": "Typ urządzenia (mini=7, mega=30)",
+          "pulse_default_ms": "Domyślny czas impulsu (ms)"
         }
       }
     }
