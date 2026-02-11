@@ -1,3 +1,1 @@
-# Arduino RS485 Relays (Modbus TCP)
-
-v1.0.3 fixes host UI validation.
+v1.0.4 - pymodbus kwarg compatibility (slave/unit/device_id)

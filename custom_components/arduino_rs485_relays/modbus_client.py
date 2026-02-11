@@ -1,21 +1,14 @@
 from __future__ import annotations
-
+import inspect
 import threading
 from typing import List
-
 from pymodbus.client import ModbusTcpClient
 
-
 class ModbusTcpCoilClient:
-    """Conservative Modbus TCP client (sync).
-
-    All methods are blocking; call them from HA executor threads.
-    """
-
+    """Sync Modbus TCP client with pymodbus unit/slave/device_id compatibility."""
     def __init__(self, host: str, port: int, timeout: float = 5.0) -> None:
         self._host = host
         self._port = port
-        self._timeout = timeout
         self._client = ModbusTcpClient(host=host, port=port, timeout=timeout)
         self._lock = threading.Lock()
 
@@ -30,10 +23,21 @@ class ModbusTcpCoilClient:
         if not self._client.connect():
             raise ConnectionError(f"Cannot connect to {self._host}:{self._port}")
 
+    def _unit_kw(self, func, slave_id: int) -> dict:
+        sig = inspect.signature(func)
+        if "slave" in sig.parameters:
+            return {"slave": slave_id}
+        if "device_id" in sig.parameters:
+            return {"device_id": slave_id}
+        if "unit" in sig.parameters:
+            return {"unit": slave_id}
+        return {}
+
     def read_coils(self, address: int, count: int, slave_id: int) -> List[bool]:
         with self._lock:
             self._ensure_connected()
-            rr = self._client.read_coils(address, count=count, slave=slave_id)
+            kw = self._unit_kw(self._client.read_coils, slave_id)
+            rr = self._client.read_coils(address, count=count, **kw)
             if rr is None:
                 self._client.close()
                 raise ConnectionError("No response (None) from read_coils")
@@ -44,7 +48,8 @@ class ModbusTcpCoilClient:
     def write_coil(self, address: int, value: bool, slave_id: int) -> None:
         with self._lock:
             self._ensure_connected()
-            rr = self._client.write_coil(address, value, slave=slave_id)
+            kw = self._unit_kw(self._client.write_coil, slave_id)
+            rr = self._client.write_coil(address, value, **kw)
             if rr is None:
                 self._client.close()
                 raise ConnectionError("No response (None) from write_coil")

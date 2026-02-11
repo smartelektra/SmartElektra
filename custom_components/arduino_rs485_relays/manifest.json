@@ -1,7 +1,7 @@
 {
   "domain": "arduino_rs485_relays",
   "name": "Arduino RS485 Relays (Modbus TCP)",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "documentation": "https://github.com/smartelektra/SmartElektra",
   "requirements": [],
   "codeowners": [],
