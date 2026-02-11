@@ -1,64 +1,55 @@
 from __future__ import annotations
 
-import asyncio
-import inspect
+import threading
 from typing import List
 
-from pymodbus.client import AsyncModbusTcpClient
+from pymodbus.client import ModbusTcpClient
 
 
 class ModbusTcpCoilClient:
-    """Minimal client for Modbus TCP coils: read coils + write single coil."""
+    """Conservative Modbus TCP client (sync).
+
+    Gateways that drop async sockets often work better with a single sync socket.
+    All methods here are blocking; call them from HA executor threads.
+    """
 
     def __init__(self, host: str, port: int, timeout: float = 5.0) -> None:
         self._host = host
         self._port = port
         self._timeout = timeout
-        self._client: AsyncModbusTcpClient | None = None
-        self._lock = asyncio.Lock()
+        self._client = ModbusTcpClient(host=host, port=port, timeout=timeout)
+        self._lock = threading.Lock()
 
-    async def async_connect(self) -> None:
-        if self._client is None:
-            self._client = AsyncModbusTcpClient(
-                host=self._host,
-                port=self._port,
-                timeout=self._timeout,
-            )
-        await self._client.connect()
+    def close(self) -> None:
+        with self._lock:
+            try:
+                self._client.close()
+            except Exception:
+                pass
 
-    async def async_close(self) -> None:
-        if self._client is not None:
-            self._client.close()
-            self._client = None
+    def _ensure_connected(self) -> None:
+        # pymodbus returns bool for connect()
+        if not self._client.connect():
+            raise ConnectionError(f"Cannot connect to {self._host}:{self._port}")
 
-    def _unit_kwarg(self, func, slave_id: int) -> dict:
-        """Handle pymodbus argument name differences (slave/device_id/unit)."""
-        sig = inspect.signature(func)
-        if "slave" in sig.parameters:
-            return {"slave": slave_id}
-        if "device_id" in sig.parameters:
-            return {"device_id": slave_id}
-        if "unit" in sig.parameters:
-            return {"unit": slave_id}
-        return {}
-
-    async def read_coils(self, address: int, count: int, slave_id: int) -> List[bool]:
-        async with self._lock:
-            await self.async_connect()
-            assert self._client is not None
-            kw = self._unit_kwarg(self._client.read_coils, slave_id)
-            rr = await self._client.read_coils(address, count=count, **kw)
+    def read_coils(self, address: int, count: int, slave_id: int) -> List[bool]:
+        with self._lock:
+            self._ensure_connected()
+            rr = self._client.read_coils(address, count=count, slave=slave_id)
+            if rr is None:
+                # Some gateways return None on socket issues
+                self._client.close()
+                raise ConnectionError("No response (None) from read_coils")
             if rr.isError():
                 raise RuntimeError(f"Modbus read_coils error: {rr}")
             return list(rr.bits[:count])
 
-    async def write_coil(self, address: int, value: bool, slave_id: int) -> None:
-        async with self._lock:
-            await self.async_connect()
-            assert self._client is not None
-            kw = self._unit_kwarg(self._client.write_coil, slave_id)
-            rr = await self._client.write_coil(address, value, **kw)
+    def write_coil(self, address: int, value: bool, slave_id: int) -> None:
+        with self._lock:
+            self._ensure_connected()
+            rr = self._client.write_coil(address, value, slave=slave_id)
+            if rr is None:
+                self._client.close()
+                raise ConnectionError("No response (None) from write_coil")
             if rr.isError():
-                rr2 = await self._client.write_coil(address, [value], **kw)
-                if rr2.isError():
-                    raise RuntimeError(f"Modbus write_coil error: {rr2}")
+                raise RuntimeError(f"Modbus write_coil error: {rr}")

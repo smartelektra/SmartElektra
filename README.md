@@ -2,6 +2,10 @@
 
 Custom Home Assistant integration for Arduino UNO + RS485 + Modbus TCP gateway.
 
+## Notes
+This version uses **synchronous** pymodbus TCP client executed in HA executor threads.
+It is intentionally conservative to work with "picky" RS485↔ETH gateways that drop async connections.
+
 ## Features
 - UI configuration (IP, Port, Slave, Base address, Scan interval)
 - 7 relays mapped to coils base..base+6 (default base=0)

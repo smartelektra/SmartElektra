@@ -35,10 +35,11 @@ class RelayDataCoordinator(DataUpdateCoordinator[List[bool]]):
 
     async def _async_update_data(self) -> List[bool]:
         try:
-            return await self._client.read_coils(
-                address=self.base_address,
-                count=RELAYS_COUNT,
-                slave_id=self.slave,
+            return await self.hass.async_add_executor_job(
+                self._client.read_coils,
+                self.base_address,
+                RELAYS_COUNT,
+                self.slave,
             )
         except Exception as err:
             raise UpdateFailed(str(err)) from err

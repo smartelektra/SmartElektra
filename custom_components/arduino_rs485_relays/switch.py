@@ -35,13 +35,14 @@ async def async_setup_entry(
 ) -> None:
     coordinator: RelayDataCoordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
     client = hass.data[DOMAIN][entry.entry_id]["client"]
-    async_add_entities([ArduinoRelaySwitch(entry, coordinator, client, d) for d in RELAY_DESCRIPTIONS])
+    async_add_entities([ArduinoRelaySwitch(hass, entry, coordinator, client, d) for d in RELAY_DESCRIPTIONS])
 
 
 class ArduinoRelaySwitch(SwitchEntity):
     _attr_has_entity_name = True
 
-    def __init__(self, entry, coordinator: RelayDataCoordinator, client, desc: RelayDescription) -> None:
+    def __init__(self, hass: HomeAssistant, entry, coordinator: RelayDataCoordinator, client, desc: RelayDescription) -> None:
+        self.hass = hass
         self._entry = entry
         self._coordinator = coordinator
         self._client = client
@@ -67,10 +68,10 @@ class ArduinoRelaySwitch(SwitchEntity):
 
     async def async_turn_on(self, **kwargs) -> None:
         addr = self._coordinator.base_address + self._desc.index
-        await self._client.write_coil(addr, True, self._coordinator.slave)
+        await self.hass.async_add_executor_job(self._client.write_coil, addr, True, self._coordinator.slave)
         await self._coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs) -> None:
         addr = self._coordinator.base_address + self._desc.index
-        await self._client.write_coil(addr, False, self._coordinator.slave)
+        await self.hass.async_add_executor_job(self._client.write_coil, addr, False, self._coordinator.slave)
         await self._coordinator.async_request_refresh()

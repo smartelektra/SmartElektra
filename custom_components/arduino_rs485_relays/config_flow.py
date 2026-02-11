@@ -39,15 +39,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             client = ModbusTcpCoilClient(user_input[CONF_HOST], user_input[CONF_PORT], timeout=5.0)
             try:
-                await client.read_coils(
-                    address=user_input[CONF_BASE_ADDRESS],
-                    count=1,
-                    slave_id=user_input[CONF_SLAVE],
+                # blocking call in executor
+                await self.hass.async_add_executor_job(
+                    client.read_coils, user_input[CONF_BASE_ADDRESS], 1, user_input[CONF_SLAVE]
                 )
             except Exception:
                 errors["base"] = "cannot_connect"
             finally:
-                await client.async_close()
+                await self.hass.async_add_executor_job(client.close)
 
             if not errors:
                 await self.async_set_unique_id(
